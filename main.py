@@ -1,24 +1,29 @@
 from alignment import Alignment
+from control import Robot
+
 #MAIN
 filename = "test_recording"
 record = True
 playback = False
+streaming = True
+moved = False
 
-if record:
-    alignment = Alignment(filename, record, playback)
+alignment = Alignment(filename, record, playback)
+robot = Robot()
 
-    alignment.getRGB()
-    ds = alignment.getDepth()
-    cd = alignment.clip(ds)
-    align = alignment.align()
-    alignment.stream(align, cd, ds)  
-    alignment.cleanup()
+alignment.getRGB()
+ds = alignment.getDepth()
+cd = alignment.clip(ds)
+align = alignment.align()
+
+while streaming:
+    streaming = alignment.stream(align, cd, ds)
     
-if playback:
-    alignment = Alignment(filename, record, playback)
-    alignment.getRGB()
-    ds = alignment.getDepth()
-    cd = alignment.clip(ds)
-    align = alignment.align()
-    alignment.stream(align, cd, ds)
-    alignment.cleanup()
+
+robot.shutdown()
+    
+alignment.cleanup()
+
+
+
+
