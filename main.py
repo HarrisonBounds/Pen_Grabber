@@ -6,13 +6,12 @@ playback = False
 
 if record:
     alignment = Alignment(filename, record, playback)
-    streaming = True
 
     alignment.getRGB()
     ds = alignment.getDepth()
     cd = alignment.clip(ds)
     align = alignment.align()
-    alignment.stream(align, cd, HSV=True)
+    alignment.stream(align, cd, ds)  
     alignment.cleanup()
     
 if playback:
@@ -21,5 +20,5 @@ if playback:
     ds = alignment.getDepth()
     cd = alignment.clip(ds)
     align = alignment.align()
-    alignment.stream(align, cd)
+    alignment.stream(align, cd, ds)
     alignment.cleanup()
