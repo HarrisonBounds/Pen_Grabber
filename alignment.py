@@ -17,12 +17,9 @@ class Alignment:
         self.device_product_line = str(self.device.get_info(rs.camera_info.product_line))
         self.clipping_distance_meters = 1 #In meters
 
-
-        
         filename = f'recordings/{fn}'
         
         if record:
-            print("Here")
             self.config.enable_record_to_file(filename)
         if playback:
             self.config.enable_device_from_file(filename)
@@ -135,11 +132,10 @@ class Alignment:
             
         
         
-    def convert_Depth_to_Pixels(self, px, py, depth):
-        profile2 = self.profile.get_stream(rs.stream.color)
-        intrinsics = profile2.as_video_stream_profile().get_intrinsics()
-        z = rs.rs2_deproject_pixel_to_point(intrinsics, [px, py], depth)
-        return z
+    def convert_Pixels_to_3D(self, px, py, depth_frame, depth):
+        intrinsics = depth_frame.profile.as_video_stream_profile().get_intrinsics()
+        x, y, z = rs.rs2_deproject_pixel_to_point(intrinsics, [px, py], depth)
+        return x, y, z
     
     #Use loop
     def stream(self, align, clipping_distance, ds):
@@ -170,17 +166,16 @@ class Alignment:
         mask = self.convert_to_HSV(color_image)
         contour, x, y = self.findContour(mask)
         
-        #Get depth from pixels
-        z = depth_image[y][x] * ds
-        
         cv2.drawContours(color_image, contour, -1, (0, 255, 0), 3)
         cv2.circle(color_image, (x, y), 5, (0, 0, 255), -1)
-        text = f"x: {round(x, 2)}, y: {round(y, 2)}, z: {round(z, 2)}"
+        text = f"x: {round(x, 2)}, y: {round(y, 2)}"
         cv2.putText(color_image, text, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 0, 0), thickness=3)
         cv2.imshow(self.mask_image_name, color_image)
         
-        
-        
+        #Get depth from pixels
+        depth = aligned_depth_frame.get_distance(x, y)
+        x, y, z = self.convert_Pixels_to_3D(x, y, aligned_depth_frame, depth)
+                
         # #Thresholding
         # binary_threshold = self.binary_thresholding(color_image)
         # self.findContour(binary_threshold)
@@ -195,8 +190,8 @@ class Alignment:
         images = np.hstack((bg_removed, depth_colormap))
         
 
-        cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
-        cv2.imshow('Align Example', images)
+        # cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
+        # cv2.imshow('Align Example', images)
             
         key = cv2.waitKey(1)
     
@@ -205,7 +200,8 @@ class Alignment:
             cv2.destroyAllWindows()
             return False
         
-        return True
+        return x, y, z
+    
 
     def cleanup(self):
         self.pipeline.stop()
