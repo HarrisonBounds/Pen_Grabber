@@ -131,10 +131,9 @@ class Alignment:
             return None, 0, 0
             
         
-        
-    def convert_Pixels_to_3D(self, px, py, depth_frame, depth):
+    def convert_Pixels_to_3D(self, px, py, depth_frame, depth_image, depth_scale):
         intrinsics = depth_frame.profile.as_video_stream_profile().get_intrinsics()
-        x, y, z = rs.rs2_deproject_pixel_to_point(intrinsics, [px, py], depth)
+        x, y, z = rs.rs2_deproject_pixel_to_point(intrinsics, [px, py], depth_image[py][px] * depth_scale)
         return x, y, z
     
     #Use loop
@@ -173,8 +172,8 @@ class Alignment:
         cv2.imshow(self.mask_image_name, color_image)
         
         #Get depth from pixels
-        depth = aligned_depth_frame.get_distance(x, y)
-        x, y, z = self.convert_Pixels_to_3D(x, y, aligned_depth_frame, depth)
+ 
+        x, y, z = self.convert_Pixels_to_3D(x, y, aligned_depth_frame, depth_image, ds)
                 
         # #Thresholding
         # binary_threshold = self.binary_thresholding(color_image)

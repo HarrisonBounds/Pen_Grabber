@@ -14,7 +14,12 @@ class Robot():
     def set_random_joints(self):
         return self.robot.arm.set_joint_positions([random.uniform(-0.8, 0.8), random.uniform(-0.5, 0.5), random.uniform(-0.4, 0.4), random.uniform(-0.4, 0.4)])
     
+    def move_single_joint(self, joint_name, val):
+        self.robot.arm.set_single_joint_position(joint_name, val)
     
+    def move_all_joints(self, positions):
+        return self.robot.arm.set_joint_positions(positions)
+        
     def get_joint_positions(self):
         return self.robot.arm.get_joint_commands()
     

@@ -27,20 +27,14 @@ rotation_matrix = Rotation.from_matrix(rotation_matrix)
 robot.move_to_home()
 robot.open_gripper()
 
+
 x, y, z = video.stream(align, cd, ds)
-
 q = rotation_matrix.apply([x, y, z]) + translation_vector
+robot.set_ee_pose(q[0], q[1], q[2])
+robot.close_gripper()
+robot.move_to_sleep()
 
-print("Main Q: ", q)
-print("Main translation: ", translation_vector)
-print("Main rotation: ", rotation_matrix.as_matrix())
 
-try:
-    robot.set_ee_pose(q[0], q[1], q[2])
-    robot.close_gripper()
-    robot.move_to_sleep()
-except:
-    robot.shutdown()
     
 robot.shutdown()
 
