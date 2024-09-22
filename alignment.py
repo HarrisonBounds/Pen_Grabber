@@ -17,7 +17,7 @@ class Alignment:
         self.device_product_line = str(self.device.get_info(rs.camera_info.product_line))
         self.clipping_distance_meters = 1 #In meters
 
-        filename = f'recordings/{fn}'
+        filename = f'.gitignore/recordings/{fn}'
         
         if record:
             self.config.enable_record_to_file(filename)
@@ -163,17 +163,21 @@ class Alignment:
         
         #HSV - Black and White mask
         mask = self.convert_to_HSV(color_image)
-        contour, x, y = self.findContour(mask)
+        contour, org_x, org_y = self.findContour(mask)
+        
+        x, y, z = self.convert_Pixels_to_3D(org_x, org_y, aligned_depth_frame, depth_image, ds)
+
         
         cv2.drawContours(color_image, contour, -1, (0, 255, 0), 3)
-        cv2.circle(color_image, (x, y), 5, (0, 0, 255), -1)
-        text = f"x: {round(x, 2)}, y: {round(y, 2)}"
+        cv2.circle(color_image, (org_x, org_y), 5, (0, 0, 255), -1)
+        text = f"x: {round(x*100, 2)}, y: {round(y*100, 2)}, z: {round(z*100, 2)}"
         cv2.putText(color_image, text, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 0, 0), thickness=3)
+        
+  
         cv2.imshow(self.mask_image_name, color_image)
         
         #Get depth from pixels
  
-        x, y, z = self.convert_Pixels_to_3D(x, y, aligned_depth_frame, depth_image, ds)
                 
         # #Thresholding
         # binary_threshold = self.binary_thresholding(color_image)
